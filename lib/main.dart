@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'auth/session_coordinator.dart';
 import 'auth/session_store.dart';
+import 'data/peak_identity_deduper.dart';
 import 'data/peak_repository.dart';
 import 'pages/home_page.dart';
 import 'theme/app_theme_controller.dart';
@@ -8,6 +9,8 @@ import 'theme/app_theme_controller.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await PeakRepository.instance.initialize();
+  await PeakIdentityDeduper.run(PeakRepository.instance.databasePath);
+  await PeakRepository.instance.ensureDatabaseReady();
   await SessionStore.instance.load();
   await AppThemeController.instance.load();
   SessionCoordinator.instance.start();
