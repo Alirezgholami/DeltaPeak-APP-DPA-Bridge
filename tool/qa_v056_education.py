@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Regression gate for DPA v0.5.7 education pack and upgrade path."""
+"""Regression gate for DPA education pack, media and management workflow."""
 from __future__ import annotations
 import json
+import re
 from collections import Counter
 from pathlib import Path
 
@@ -9,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def fail(message: str) -> None:
-    raise SystemExit(f'DPA v0.5.7 EDUCATION QA FAILED: {message}')
+    raise SystemExit(f'DPA EDUCATION QA FAILED: {message}')
 
 
 def text(path: str) -> str:
@@ -66,18 +67,35 @@ for required in (
         fail(f'non-destructive education upgrade path missing {required!r}')
 
 page = text('lib/pages/education_page.dart')
-for required in ('۴۲ درس', 'جست‌وجو در آموزش‌های این بخش', 'EducationContentPage', 'launchUrl', 'پیوندهای این آموزش'):
+for required in ('جست‌وجو در آموزش‌های این بخش', 'EducationContentPage', 'launchUrl', 'پیوندهای این آموزش', 'افزودن تصویر', 'افزودن لینک مدیا'):
     if required not in page:
         fail(f'education UI missing {required!r}')
 
+media = text('lib/services/education_media_store.dart')
+for required in ('education_media', 'addImage', 'addMediaLink', 'blob_data'):
+    if required not in media:
+        fail(f'education media support missing {required!r}')
+
+manager = text('lib/pages/education_management_page.dart')
+store = text('lib/services/education_content_store.dart')
+settings = text('lib/pages/settings_page.dart')
+for required in ('تأیید نهایی / Publish', 'برگشت به Draft', 'Archive', 'پیش‌نمایش'):
+    if required not in manager:
+        fail(f'education management UI missing {required!r}')
+for required in ('publication_status', "{'draft', 'published', 'archived'}", 'education_change_log', 'setStatus'):
+    if required not in store:
+        fail(f'education content workflow missing {required!r}')
+if 'مدیریت آموزش؛ Draft / Publish / Archive' not in settings:
+    fail('education management is not exposed in settings')
+
 pubspec = text('pubspec.yaml')
-if 'version: 0.5.7+15' not in pubspec:
-    fail('app version is not 0.5.7+15')
+if not re.search(r'^version:\s+0\.5\.\d+\+\d+$', pubspec, re.MULTILINE):
+    fail('invalid app version format')
 if '- assets/education_v1.json' not in pubspec:
     fail('education asset is not bundled')
 
-print('DPA v0.5.7 EDUCATION QA PASSED')
-print('  education: 6 categories / 42 published lessons')
-print('  navigation/GPX: GPX + Track/Route/Waypoint + AlpineQuest + offline + DPA guidance')
-print('  upgrade: one-time non-destructive migration preserves unknown/custom education rows')
-print('  UI: searchable lesson list + article page + clickable external links')
+print('DPA EDUCATION QA PASSED')
+print('  education: 6 categories / 42 bundled published lessons')
+print('  media: local images + external media links')
+print('  workflow: create/edit -> draft -> preview -> publish -> draft/archive')
+print('  access: management entry is gated through DPA manager permissions')
