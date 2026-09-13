@@ -57,7 +57,15 @@ class EducationContentStore {
   }
 
   Future<Database> _open() async {
-    final db = await openDatabase(PeakRepository.instance.databasePath);
+    // PeakRepository keeps its own long-lived sqflite connection open. sqflite
+    // caches connections by path when singleInstance=true (the default), so
+    // opening the same path here and then closing it can close the repository's
+    // shared handle as well. Education CRUD therefore uses an explicitly
+    // independent connection which it owns and may safely close.
+    final db = await openDatabase(
+      PeakRepository.instance.databasePath,
+      singleInstance: false,
+    );
     await _ensureSchema(db);
     return db;
   }
