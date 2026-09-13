@@ -1,0 +1,59 @@
+DPA SOURCE MANIFEST — v0.5.5+13
+================================
+Reference app version: 0.5.5+13
+Bundled database: DPD v3.90 + v3.91 enrichment B10
+Bundled schema: 5
+Runtime schema target: 6
+Dataset revision: v390-v391b10-corefields-v2
+Publishable peaks: 1999
+GPX route records/scaffolds: 919
+Official provinces: 31
+
+Key v0.5.5 implementation files:
+- lib/utils/persian_normalizer.dart
+- lib/utils/persian_input_formatters.dart
+- lib/data/peak_repository.dart
+- lib/pages/owner_edit_page.dart
+- lib/pages/route_edit_page.dart
+- lib/pages/stats_page.dart
+- tool/import_excel.py
+- backend/app/persian_normalizer.py
+- backend/tests/test_persian_normalization.py
+- test/search_normalization_test.dart
+- tool/qa_v055_features.py
+
+Reference data files remain:
+- assets/peaks.db
+- assets/data_patch_v391_b09.json
+- assets/data_patch_v391_b10.json
+- database_source/DeltaPeakDatabase_V3_90_GPXConsolidation_Master.xlsx
+- database_source/DeltaPeakDatabase_V3_91_EnrichmentPatch_Batch09.xlsx
+- database_source/DeltaPeakDatabase_V3_91_EnrichmentPatch_Batch10.xlsx
+
+Validation:
+- Database QA PASS
+- Data safety QA PASS
+- v0.5.5 feature QA PASS
+- Backend pytest 7/7 PASS
+- Import normalization smoke PASS
+- Schema-6 range migration simulation PASS
+- Dart lexical balance PASS
+- Flutter analyze/test deferred to CI because Flutter SDK is unavailable locally
+
+SHA256 reference/data:
+- V3.90 master: 20fb7302a16447fd5383a96d51e6fa5a118c20ae542c7d16b4e19e4ec54398a0
+- V3.91 B09 workbook: d3c0c7bfe136fc98d1977d6c9b5ad0cd1e85a17c88c5e43d99c86c06f07c7a67
+- V3.91 B10 workbook: 051db7caa07524576dffd254419aae904a04baf268757649d1ded595a2db37d7
+- B09 JSON: f1f6e31e59e1c4a3097b946ee03c0ca0779d06569f3fdcb258ad8ad6ba9e212f
+- B10 JSON: eaa3c16a01476984646b84a37ff6db27976b9a00ea35a359ad84a2878ca2552b
+- peaks.db: 84ec93dbb9fccd453cac08d96c21f95eb557067c72b89c8cde98214963384937
+
+SHA256 key v0.5.5 code snapshot before packaging:
+- persian_normalizer.dart: ee6244fd3bb9ba897527b9c51cb86500e8721513fc58438fb9d4491eee978e02
+- persian_input_formatters.dart: 8478e84eb25fbe5e21ecc3c9c8eb9c620cdab804142ec33b4588d2ddc88b8725
+- peak_repository.dart: 08d8269e7e4349997c0ef1c30cfc211b549582a037f8f544cdfe288d7e1fd6b4
+- stats_page.dart: 8319afa080c946708b140e8b9497e9b37fd8642aca6a2dac44867c58c42151f4
+- owner_edit_page.dart: 2b3ba6aba98b2a4a3905da0c382f060c032d36f0039b78f0a33bcc1fb42a30c9
+- route_edit_page.dart: b42413714c7eb258fc7c73eb22e73c0086f7f85b5210236e1257caa90ff7f3bd
+- qa_v055_features.py: f4f75f6d10ccf58af2c426aceff39ac03744f530af688c367083f61902d5bd7b
+- search_normalization_test.dart: ade1c25f73568fc1f1030f3fbc1adf7f31d385c72bd725bef05c95c449cb57bf

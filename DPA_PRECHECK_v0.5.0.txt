@@ -1,0 +1,16 @@
+DPA v0.5.0+8 PRECHECK
+======================
+Backend tests: PASS (5)
+DPD v3.88 database QA: PASS
+Data Safety gate: PASS
+Production env/preflight self-test: PASS
+YAML parse (Compose + GitHub workflows): PASS
+Flutter SDK in local execution environment: NOT INSTALLED
+Flutter analyze/test/build: DEFERRED TO GITHUB ACTIONS GATE
+Publishable peaks: 1999
+GPX route scaffolds: 876
+Official province labels: 31
+Backend version: 0.5.0
+App version: 0.5.0+8
+Release API policy: HTTPS only
+Production signing workflow: configured; real keystore secrets not present in source

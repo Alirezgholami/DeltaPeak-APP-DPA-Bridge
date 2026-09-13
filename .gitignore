@@ -1,17 +1,29 @@
 .dart_tool/
+.flutter-plugins*
+.idea/
+.metadata
+build/
+android/.gradle/
+android/local.properties
+*.iml
+
+# DPA production secrets / release signing
+backend/.env.production
+backend/backups/
+android/key.properties
+android/app/*.jks
+android/app/*.keystore
+
+# DPA Bridge safety
+.dart_tool/
 build/
 .gradle/
-.idea/
-.vscode/
-
 *.apk
 *.aab
 *.jks
 *.keystore
-
 key.properties
 local.properties
-
 .env
 .env.*
 secrets/

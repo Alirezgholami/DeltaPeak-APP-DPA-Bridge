@@ -1,0 +1,6 @@
+DPA v0.5.2+10 PRECHECK
+Home filter row: REMOVED
+Home favorite control: COMPACT HEART BESIDE PROVINCE
+Coordinates/GPX/Quality filters: SETTINGS
+Internal owner peak CRUD: ENABLED
+Production role control: PRESERVED

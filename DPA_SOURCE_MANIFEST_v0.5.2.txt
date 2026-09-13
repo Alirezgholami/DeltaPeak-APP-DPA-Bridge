@@ -1,0 +1,22 @@
+DPA SOURCE MANIFEST — v0.5.2+10
+
+Reference app version: 0.5.2+10
+Database: DPD v3.88
+Database schema: 4
+Dataset revision: internal-owner-setup-filters-ui-v4
+
+Home UI:
+- Province selector remains on Home.
+- Compact favorites heart remains directly beside province selector.
+- Horizontal chip/filter row removed entirely.
+
+Settings / Setup:
+- Favorites page entry retained.
+- Has Coordinates filter moved here.
+- Has GPX filter moved here.
+- Data quality filters Complete / Incomplete / Needs Review moved here.
+- Filters persist via app_settings and refresh Home on return.
+
+Owner management:
+- Internal build: local owner can Add/Edit/Soft Delete/Restore peaks without backend.
+- Production build: owner/admin permission remains server-account controlled.

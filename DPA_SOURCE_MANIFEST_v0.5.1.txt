@@ -1,0 +1,32 @@
+DPA SOURCE MANIFEST — v0.5.1+9
+================================
+Reference app version: 0.5.1+9
+Backend version: 0.5.0
+Database: DPD v3.88 / Schema 4
+Publishable peaks: 1999
+GPX route scaffolds: 876
+Official province labels: 31
+
+Major v0.5.1 additions:
+- Internal-only local Owner mode for Add/Edit/Soft Delete/Restore without Backend login
+- Production Owner/Admin authorization remains enforced
+- Favorites text chip moved from Home filter strip into Settings
+- Heart-only Favorites quick filter placed beside Province selector
+- Province selector shortened by compact heart-control width
+- Favorites page added under Settings
+- Internal build workflow defines DPA_INTERNAL_OWNER_MODE=true
+
+Not executed locally: flutter analyze / flutter test / flutter build
+Reason: Flutter SDK is not installed in this execution environment.
+GitHub Actions remains the mandatory compile/test/build gate.
+
+KEY_FILE_SHA256:
+48f02c64482f9609a1fe6dce5970e9a83c2c73018d79d3fa60dd58c1164d3310  pubspec.yaml
+8d6c9a9091075aaf463d7c003cd0111459b8c0ba251132798d6000387b96e519  lib/app_info.dart
+a52c7663fd8e64fb3aa7520e03f1f6509358d09bac36a37d2c716b4aa9e47221  lib/auth/session_store.dart
+58e540757cc9eb9d2a3bfd47379ff858c73f40826d4bcf26ffa176afe40cd04b  lib/data/peak_repository.dart
+973158db5cb4811d6aed268342130a706c64a4a0caf55c41ad1cff2cab4899cc  lib/pages/home_page.dart
+bae312ce4d4c18450ebd3cda6bb0eeee7ed2d4842a8a3e0ce42201def38a99e5  lib/pages/favorites_page.dart
+52e3570f2bb20decc459be10fbfa86716389e0d32ae528b274501a6afdf13b0f  lib/pages/settings_page.dart
+40086ca6e607229d6f17ea24d57ea642a77f81593f2b65c57f237ef5a011fbd1  .github/workflows/build-apk.yml
+92c976654520c610ab8e69412a3d7b990a95da4c6abbeca2e6ce84954c26d47f  .github/workflows/release-apk.yml

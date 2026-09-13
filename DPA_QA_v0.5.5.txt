@@ -1,0 +1,32 @@
+DPA v0.5.5+13 QA REPORT
+========================
+Database QA: PASS
+  Bundled DB: DPD v3.90 + v3.91 enrichment B10
+  Bundled schema: 5
+  Publishable peaks: 1999
+  GPX route records: 919
+  Official province labels: 31
+
+Data Safety QA: PASS
+v0.5.5 feature regression QA: PASS
+Backend pytest: 7/7 PASS
+Excel/import Persian normalization smoke: PASS
+Dart lexical brace/bracket balance: PASS (36 Dart files)
+
+Schema 6 mountain-range migration simulation: PASS
+  Persistent master rows from current data: 19
+  Linked active peaks: 59
+  Orphan mountain_range_id rows: 0
+  Sum usage_count: 59
+
+Flutter analyze/test: NOT EXECUTED LOCALLY
+Reason: Flutter SDK is not installed in this execution environment.
+Enforcement: both remain mandatory steps in the included GitHub Actions workflows before APK artifact upload.
+
+Feature assertions:
+- Completeness denominator is dynamic publishable peak count.
+- Red missing segment completes every progress bar to 100%.
+- Red numeric line uses total - completed = missing.
+- Persian text is normalized live in Peak/Route entry plus repository save/search/import defense.
+- Persian/Arabic digits are normalized live plus before numeric parsing.
+- Mountain range suggestions start on the first typed character and learn new canonical names persistently.

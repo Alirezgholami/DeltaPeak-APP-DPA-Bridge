@@ -1,0 +1,48 @@
+DPA SOURCE MANIFEST — v0.5.6+14
+================================
+Reference app version: 0.5.6+14
+Bundled database: DPD v3.90 + v3.91 enrichment B10
+Bundled schema: 5
+Runtime schema target: 6
+Dataset revision: v390-v391b10-corefields-v2
+Publishable peaks: 1999
+GPX route records/scaffolds: 919
+Official provinces: 31
+Education revision: edu-v1-20260912
+Education categories: 6
+Education contents: 42
+
+Key v0.5.6 implementation files:
+- assets/education_v1.json
+- lib/data/peak_repository.dart
+- lib/pages/education_page.dart
+- tool/import_excel.py
+- tool/qa_database.py
+- tool/qa_v056_education.py
+- .github/workflows/build-apk.yml
+- .github/workflows/release-apk.yml
+
+Validation:
+- Database QA PASS
+- Data Safety QA PASS
+- v0.5.5 regression QA PASS
+- v0.5.6 education QA PASS
+- Python compile PASS
+- Backend pytest 7/7 PASS
+- v0.5.5 -> v0.5.6 education migration simulation PASS
+- Dart lexical balance PASS
+- Flutter analyze/test deferred to GitHub Actions because Flutter SDK is unavailable locally
+
+SHA256 key files:
+- pubspec.yaml: 1c122bd4b32b7f2764fe63df5f54bf9fa0a7a7cf62cd63dddf6f8bbb1a3eb1b6
+- lib/app_info.dart: 70ce2ab28921340dfc8791c92fb080ab6e213507ddb8dd8766e50d1f791c661f
+- lib/data/peak_repository.dart: bed071ecfb8abe1da38b1d0a47a50e9af4255db4ff7876fa6f9da3ea3905eda4
+- lib/pages/education_page.dart: 60357441999ae6c70a7acc6b2c8b096326fa7746ef54bfa6f1785f5310c5d3f2
+- assets/education_v1.json: 5c0ca8c6dcd1e13caebeb15eaf8209c23dcb6f5fa990c3841c7e024ada6299dc
+- assets/peaks.db: 9023e2a9ebcaf5014ce5b6bcfc8a8c175377bc363101462521e8d98d14831838
+- tool/import_excel.py: 515cf7dbcdd2f4aa4fff5a426636037cf0682e1a5ae1e24ba79e0f93490d6051
+- tool/qa_database.py: 716f5f9d2e62229853b23fa61d73c9f658b0153e610c6620e7ec035a4a84200f
+- tool/qa_v055_features.py: 2589b096f13f192717af7b2c9a9d99c502a253b491076a0efe295ea1fc39b07d
+- tool/qa_v056_education.py: 72f4706b319caea9a4547d322421614dc9f82fcef0e701eeeed2903680c8c87d
+- .github/workflows/build-apk.yml: abb37c55e165d690a144fdf4bc20e36685acfc4848f475e3ebec0b4235c7c31c
+- .github/workflows/release-apk.yml: 3349f7a04c1380d466908ecfaa62c05a154f2c5cd3e23b51d785b256489102e9

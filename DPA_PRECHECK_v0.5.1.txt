@@ -1,0 +1,19 @@
+DPA v0.5.1+9 PRECHECK
+=====================
+App version: 0.5.1+9
+Backend version: 0.5.0 (unchanged)
+Database: DPD v3.88 / Schema 4
+Publishable peaks: 1999
+GPX route scaffolds: 876
+
+Implemented:
+- Internal Owner mode for local Add/Edit/Soft Delete/Restore.
+- Production role gate preserved.
+- Favorites list moved to Settings.
+- Heart-only Favorites toggle beside province selector.
+- Province selector shortened to make room for compact heart control.
+- Internal workflow passes DPA_INTERNAL_OWNER_MODE=true.
+- Internal flutter analyze warnings/infos are non-fatal.
+
+Not run locally: flutter analyze / flutter test / flutter build (Flutter SDK unavailable here).
+Required gate: GitHub Actions Build DPA Android APK.

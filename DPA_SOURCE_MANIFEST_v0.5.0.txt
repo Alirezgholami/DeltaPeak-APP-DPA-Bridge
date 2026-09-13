@@ -1,0 +1,46 @@
+DPA SOURCE MANIFEST — v0.5.0+8
+================================
+Reference app version: 0.5.0+8
+Backend version: 0.5.0
+Database: DPD v3.88 / Schema 4
+Publishable peaks: 1999
+GPX route scaffolds: 876
+Official province labels: 31
+
+Major v0.5.0 additions:
+- OTP-verified mobile signup
+- Login brute-force rate limiting
+- Separate signup/reset SMS purposes/templates
+- Production HTTPS-only release client
+- PostgreSQL + Caddy TLS production Compose
+- Hardened non-root/read-only API container
+- Production env generator/preflight/smoke/backup tools
+- Dedicated production Android release signing workflow
+- GitHub Actions checkout v6 / upload-artifact v7
+
+Local gates passed before packaging:
+- Backend pytest: 5 passed
+- DPD database QA: PASS
+- Data Safety QA: PASS
+- Production preflight self-test: PASS
+- YAML parse: PASS
+- Shell syntax checks: PASS
+
+Not executed locally: flutter analyze / flutter test / flutter build
+Reason: Flutter SDK is not installed in this execution environment.
+Those remain mandatory GitHub Actions gates.
+
+No .env.production, JKS/keystore, key.properties, SMS API key, JWT secret,
+OTP pepper or PostgreSQL production password is included in this source snapshot.
+
+KEY_FILE_SHA256:
+382d226929a6c0a88cc0ecfcde4a0f571a9c7a119ecb8102c8c9a88c85c3b894  pubspec.yaml
+60c4f1cb5ade9a2521510a75a711bf0f3f8975edc70d3e62292b393663d6d1b0  lib/auth/auth_service.dart
+a7e6a9b3acb5d05011fb657b5d31a30bb74a93b79d372804ed895263c2bee69f  lib/pages/auth_pages.dart
+9c41d8eadc035c3b44a090e31e2fe27dc70e72f31b3fbccbf1516b86eff0dcaa  backend/app/main.py
+2905ab838ee6fe49fc7f44fdc6bc67de046a38d47a15a327e5ead83c04d7c001  backend/app/security.py
+c7b92a5c5b0eabb4c3e9dcffd26c0a797599faebc95ed47bb788d243181ceddf  backend/app/sms.py
+111adeb2628396dc2b9da15a097c4e1aaeaa7a4fabb8c77c62ce843aa6be3498  backend/docker-compose.yml
+391e7d29a6ef4e06e8a8692c246fb54cabcbadcc810843c4ebb621623adcbf4a  backend/Caddyfile
+8cbe28dccc9e603e3ec49bb65342e26b1e28b421ce3c2a734fbfa7c2a81f6f84  .github/workflows/build-apk.yml
+8741c2971b983d1359a27a9a0ab44b0ffdac916e919834d84928b8db61280180  .github/workflows/release-apk.yml

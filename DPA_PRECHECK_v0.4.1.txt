@@ -1,0 +1,15 @@
+DPA v0.4.1+7 PRECHECK
+=======================
+Backend pytest: PASS (4 tests)
+Backend Python compileall: PASS
+DPD database QA: PASS
+Data safety QA: PASS
+Database version: DPD v3.88
+Publishable peaks: 1999
+GPX route scaffolds: 876
+Province labels: 31 official provinces
+SMS production adapters: generic webhook + direct Kavenegar VerifyLookup
+Session: JWT access + rotating refresh + startup/resume revalidation + foreground activity heartbeat
+Deployment: PostgreSQL + Alembic + required secrets + DB/API health checks
+Flutter local analyze/test/build: NOT RUN (Flutter SDK unavailable in this execution environment)
+Flutter CI gates remain in .github/workflows/build-apk.yml

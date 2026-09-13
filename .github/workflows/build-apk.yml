@@ -1,0 +1,132 @@
+name: Build DPA Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dpa-android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build internal release APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter 3.47.2
+        uses: flutter-actions/setup-flutter@v4
+        with:
+          version: '3.47.2'
+          channel: stable
+          cache: true
+
+      - name: Rebuild bundled database from DPD v3.90 + validated v3.91 B09/B10 enrichment
+        run: >-
+          python tool/import_excel.py
+          database_source/DeltaPeakDatabase_V3_90_GPXConsolidation_Master.xlsx
+          assets/peaks.db
+          --database-version "DPD v3.90"
+      - name: Apply validated v3.91 B09 enrichment overlay
+        run: >-
+          python tool/apply_data_patch.py
+          assets/peaks.db
+          assets/data_patch_v391_b09.json
+          --database-version "DPD v3.90 + v3.91 enrichment B09"
+          --dataset-revision "v390-v391b09-corefields-import-v2"
+          --source-workbook "DeltaPeakDatabase_V3_91_EnrichmentPatch_Batch09.xlsx"
+
+      - name: Apply validated v3.91 B10 core-field overlay
+        run: >-
+          python tool/apply_data_patch.py
+          assets/peaks.db
+          assets/data_patch_v391_b10.json
+          --database-version "DPD v3.90 + v3.91 enrichment B10"
+          --dataset-revision "v390-v391b10-corefields-v2"
+          --source-workbook "DeltaPeakDatabase_V3_91_EnrichmentPatch_Batch10.xlsx"
+
+      - name: Source database QA gate
+        run: python tool/qa_database.py assets/peaks.db
+
+      - name: Data Safety static gate
+        run: python tool/qa_data_safety.py
+
+      - name: v0.5.5 normalization/completeness feature gate
+        run: python tool/qa_v055_features.py
+
+      - name: v0.5.6 education content and migration gate
+        run: python tool/qa_v056_education.py
+
+      - name: Backend auth test gate
+        run: |
+          python -m pip install -r backend/requirements.txt pytest
+          cd backend
+          PYTHONPATH=. pytest -q
+
+      - name: Complete Android project files
+        run: flutter create --platforms=android .
+
+      - name: Restore Delta Peak branding
+        run: python tool/apply_branding.py
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze source
+        run: flutter analyze --no-fatal-warnings --no-fatal-infos
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Resolve API URL
+        env:
+          API_SECRET: ${{ secrets.DPA_API_BASE_URL }}
+          API_VAR: ${{ vars.DPA_API_BASE_URL }}
+        run: |
+          API_URL="${API_SECRET:-$API_VAR}"
+          echo "DPA_API_BASE_URL=$API_URL" >> "$GITHUB_ENV"
+          if [ -z "$API_URL" ]; then
+            echo "::warning::DPA_API_BASE_URL is empty; account/SMS features will be disabled in this internal build."
+          elif [[ "$API_URL" != https://* ]]; then
+            echo "::error::Release DPA_API_BASE_URL must use HTTPS."
+            exit 1
+          fi
+
+      - name: Build internal release APK
+        run: flutter build apk --release --dart-define=DPA_API_BASE_URL="$DPA_API_BASE_URL" --dart-define=DPA_INTERNAL_OWNER_MODE=true
+
+      - name: Verify database physically bundled in APK
+        run: >-
+          python tool/verify_apk.py
+          build/app/outputs/flutter-apk/app-release.apk
+          build/DPA_BUILD_PROOF.txt
+          --api-base-url "$DPA_API_BASE_URL"
+
+      - name: Mark signing mode
+        run: |
+          printf '%s\n' 'SIGNING_MODE: DEBUG_KEY_FOR_INTERNAL_TESTING_ONLY' >> build/DPA_BUILD_PROOF.txt
+          printf '%s\n' 'DO_NOT_DISTRIBUTE_AS_PRODUCTION_RELEASE' >> build/DPA_BUILD_PROOF.txt
+
+      - name: Upload installable APK and build proof
+        uses: actions/upload-artifact@v7
+        with:
+          name: DPA-v0.5.7-Internal-Android-APK
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/DPA_BUILD_PROOF.txt
+          if-no-files-found: error
+          retention-days: 30

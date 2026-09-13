@@ -1,0 +1,124 @@
+name: Release DPA Signed Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dpa-production-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build signed production APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter 3.47.2
+        uses: flutter-actions/setup-flutter@v4
+        with:
+          version: '3.47.2'
+          channel: stable
+          cache: true
+
+      - name: Require production API and signing secrets
+        env:
+          API_URL: ${{ secrets.DPA_API_BASE_URL }}
+          KEYSTORE_B64: ${{ secrets.DPA_ANDROID_KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.DPA_ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.DPA_ANDROID_KEY_PASSWORD }}
+          STORE_PASSWORD: ${{ secrets.DPA_ANDROID_STORE_PASSWORD }}
+        run: |
+          for name in KEYSTORE_B64 KEY_ALIAS KEY_PASSWORD STORE_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing required production secret: $name"
+              exit 1
+            fi
+          done
+          if [ -n "$API_URL" ] && [[ "$API_URL" != https://* ]]; then
+            echo "::error::Production API URL must use HTTPS."
+            exit 1
+          fi
+          echo "DPA_API_BASE_URL=$API_URL" >> "$GITHUB_ENV"
+
+      - name: Rebuild and verify DPD v3.90 + v3.91 B09/B10 enrichment database
+        run: |
+          python tool/import_excel.py database_source/DeltaPeakDatabase_V3_90_GPXConsolidation_Master.xlsx assets/peaks.db --database-version "DPD v3.90"
+          python tool/apply_data_patch.py assets/peaks.db assets/data_patch_v391_b09.json --database-version "DPD v3.90 + v3.91 enrichment B09" --dataset-revision "v390-v391b09-corefields-import-v2" --source-workbook "DeltaPeakDatabase_V3_91_EnrichmentPatch_Batch09.xlsx"
+          python tool/apply_data_patch.py assets/peaks.db assets/data_patch_v391_b10.json --database-version "DPD v3.90 + v3.91 enrichment B10" --dataset-revision "v390-v391b10-corefields-v2" --source-workbook "DeltaPeakDatabase_V3_91_EnrichmentPatch_Batch10.xlsx"
+          python tool/qa_database.py assets/peaks.db
+          python tool/qa_data_safety.py
+
+      - name: v0.5.5 normalization/completeness feature gate
+        run: python tool/qa_v055_features.py
+
+      - name: v0.5.6 education content and migration gate
+        run: python tool/qa_v056_education.py
+
+      - name: Test backend
+        run: |
+          python -m pip install -r backend/requirements.txt pytest
+          cd backend
+          PYTHONPATH=. pytest -q
+
+      - name: Complete Android project and branding
+        run: |
+          flutter create --platforms=android .
+          python tool/apply_branding.py
+          flutter pub get
+          flutter analyze --no-fatal-warnings --no-fatal-infos
+          flutter test
+
+      - name: Install release signing material
+        env:
+          KEYSTORE_B64: ${{ secrets.DPA_ANDROID_KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.DPA_ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.DPA_ANDROID_KEY_PASSWORD }}
+          STORE_PASSWORD: ${{ secrets.DPA_ANDROID_STORE_PASSWORD }}
+        run: |
+          python - <<'PY'
+          import base64, os
+          from pathlib import Path
+          Path('android/app/dpa-release.jks').write_bytes(base64.b64decode(os.environ['KEYSTORE_B64']))
+          Path('android/key.properties').write_text(
+              'storePassword=' + os.environ['STORE_PASSWORD'] + '\n'
+              'keyPassword=' + os.environ['KEY_PASSWORD'] + '\n'
+              'keyAlias=' + os.environ['KEY_ALIAS'] + '\n'
+              'storeFile=dpa-release.jks\n',
+              encoding='utf-8',
+          )
+          PY
+
+      - name: Build signed production APK
+        run: flutter build apk --release --dart-define=DPA_API_BASE_URL="$DPA_API_BASE_URL"
+
+      - name: Verify bundled database and APK signature
+        run: |
+          python tool/verify_apk.py build/app/outputs/flutter-apk/app-release.apk build/DPA_BUILD_PROOF.txt --api-base-url "$DPA_API_BASE_URL"
+          bash tool/verify_apk_signature.sh build/app/outputs/flutter-apk/app-release.apk build/DPA_SIGNING_PROOF.txt
+          printf '%s\n' 'SIGNING_MODE: PRODUCTION_RELEASE_KEY' >> build/DPA_BUILD_PROOF.txt
+
+      - name: Upload signed production APK and proofs
+        uses: actions/upload-artifact@v7
+        with:
+          name: DPA-v0.5.7-Signed-Production-APK
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/DPA_BUILD_PROOF.txt
+            build/DPA_SIGNING_PROOF.txt
+          if-no-files-found: error
+          retention-days: 30
