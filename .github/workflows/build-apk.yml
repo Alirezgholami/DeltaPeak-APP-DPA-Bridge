@@ -41,6 +41,7 @@ jobs:
           database_source/DeltaPeakDatabase_V3_90_GPXConsolidation_Master.xlsx
           assets/peaks.db
           --database-version "DPD v3.90"
+
       - name: Apply validated v3.91 B09 enrichment overlay
         run: >-
           python tool/apply_data_patch.py
@@ -70,6 +71,13 @@ jobs:
 
       - name: v0.5.6 education content and migration gate
         run: python tool/qa_v056_education.py
+
+      - name: v0.5.9 education workflow static gate
+        run: |
+          grep -q "تأیید نهایی / Publish" lib/pages/education_management_page.dart
+          grep -q "publication_status" lib/services/education_content_store.dart
+          grep -q "مدیریت آموزش؛ Draft / Publish / Archive" lib/pages/settings_page.dart
+          grep -q "education_media" lib/services/education_media_store.dart
 
       - name: Backend auth test gate
         run: |
@@ -124,7 +132,7 @@ jobs:
       - name: Upload installable APK and build proof
         uses: actions/upload-artifact@v7
         with:
-          name: DPA-v0.5.7-Internal-Android-APK
+          name: DPA-v0.5.9-Internal-Android-APK
           path: |
             build/app/outputs/flutter-apk/app-release.apk
             build/DPA_BUILD_PROOF.txt
