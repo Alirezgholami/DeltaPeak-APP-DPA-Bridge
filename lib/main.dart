@@ -48,7 +48,13 @@ class DeltaPeakApp extends StatelessWidget {
           darkTheme: _theme(Brightness.dark),
           builder: (context, child) => Directionality(
             textDirection: TextDirection.rtl,
-            child: child!,
+            child: SafeArea(
+              top: false,
+              left: false,
+              right: false,
+              bottom: true,
+              child: child!,
+            ),
           ),
           home: const HomePage(),
         ),
