@@ -60,9 +60,10 @@ class _SettingsPageState extends State<SettingsPage> {
     await PeakRepository.instance.setSetting(_gpxKey, value ? '1' : null);
   }
 
-  Future<void> _setQuality(String? value) async {
-    setState(() => _quality = value);
-    await PeakRepository.instance.setSetting(_qualityKey, value);
+  Future<void> _toggleQuality(String value) async {
+    final next = _quality == value ? null : value;
+    setState(() => _quality = next);
+    await PeakRepository.instance.setSetting(_qualityKey, next);
   }
 
   Future<void> _clearFilters() async {
@@ -85,7 +86,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('تنظیمات DPA')),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
         children: [
           Card(
             child: Padding(
@@ -101,7 +102,7 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 12),
           Card(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(8, 12, 8, 8),
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
               child: _filtersLoading
                   ? const Padding(
                       padding: EdgeInsets.all(20),
@@ -110,58 +111,53 @@ class _SettingsPageState extends State<SettingsPage> {
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8),
-                          child: Text('فیلترهای فهرست قله‌ها', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+                        Row(
+                          children: [
+                            const Expanded(
+                              child: Text('فیلترهای فهرست قله‌ها', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+                            ),
+                            IconButton(
+                              onPressed: _clearFilters,
+                              tooltip: 'پاک کردن فیلترها',
+                              icon: const Icon(Icons.filter_alt_off_outlined),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 4),
-                        SwitchListTile(
-                          value: _coordinatesOnly,
-                          onChanged: _setCoordinates,
-                          secondary: const Icon(Icons.pin_drop_outlined),
-                          title: const Text('فقط قله‌های دارای مختصات'),
-                        ),
-                        SwitchListTile(
-                          value: _gpxOnly,
-                          onChanged: _setGpx,
-                          secondary: const Icon(Icons.route_outlined),
-                          title: const Text('فقط قله‌های دارای GPX'),
-                        ),
-                        const Divider(),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                          child: Text('وضعیت کیفیت داده', style: TextStyle(fontWeight: FontWeight.w700)),
-                        ),
-                        RadioListTile<String?>(
-                          value: null,
-                          groupValue: _quality,
-                          onChanged: _setQuality,
-                          title: const Text('همه وضعیت‌ها'),
-                        ),
-                        RadioListTile<String?>(
-                          value: 'incomplete',
-                          groupValue: _quality,
-                          onChanged: _setQuality,
-                          title: const Text('ناقص'),
-                        ),
-                        RadioListTile<String?>(
-                          value: 'needs_review',
-                          groupValue: _quality,
-                          onChanged: _setQuality,
-                          title: const Text('نیازمند بررسی'),
-                        ),
-                        RadioListTile<String?>(
-                          value: 'complete',
-                          groupValue: _quality,
-                          onChanged: _setQuality,
-                          title: const Text('کامل'),
-                        ),
-                        Align(
-                          alignment: AlignmentDirectional.centerEnd,
-                          child: TextButton.icon(
-                            onPressed: _clearFilters,
-                            icon: const Icon(Icons.filter_alt_off_outlined),
-                            label: const Text('پاک کردن فیلترها'),
+                        const SizedBox(height: 6),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _chip(
+                                label: 'مختصات',
+                                selected: _coordinatesOnly,
+                                onSelected: _setCoordinates,
+                              ),
+                              const SizedBox(width: 8),
+                              _chip(
+                                label: 'GPX',
+                                selected: _gpxOnly,
+                                onSelected: _setGpx,
+                              ),
+                              const SizedBox(width: 8),
+                              _chip(
+                                label: 'ناقص',
+                                selected: _quality == 'incomplete',
+                                onSelected: (_) => _toggleQuality('incomplete'),
+                              ),
+                              const SizedBox(width: 8),
+                              _chip(
+                                label: 'نیازمند بررسی',
+                                selected: _quality == 'needs_review',
+                                onSelected: (_) => _toggleQuality('needs_review'),
+                              ),
+                              const SizedBox(width: 8),
+                              _chip(
+                                label: 'کامل',
+                                selected: _quality == 'complete',
+                                onSelected: (_) => _toggleQuality('complete'),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -177,6 +173,18 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
   }
+
+  Widget _chip({
+    required String label,
+    required bool selected,
+    required ValueChanged<bool> onSelected,
+  }) => FilterChip(
+        label: Text(label),
+        selected: selected,
+        showCheckmark: true,
+        onSelected: onSelected,
+        visualDensity: VisualDensity.compact,
+      );
 
   Widget _nav(BuildContext context, IconData icon, String title, Widget page) => Card(
         margin: const EdgeInsets.only(bottom: 8),
