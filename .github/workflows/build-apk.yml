@@ -79,6 +79,9 @@ jobs:
           grep -q "مدیریت آموزش؛ Draft / Publish / Archive" lib/pages/settings_page.dart
           grep -q "education_media" lib/services/education_media_store.dart
 
+      - name: v0.5.12 canonical peak/route dedupe gate
+        run: python tool/qa_v0512_dedupe.py
+
       - name: Backend auth test gate
         run: |
           python -m pip install -r backend/requirements.txt pytest
@@ -108,7 +111,7 @@ jobs:
           API_URL="${API_SECRET:-$API_VAR}"
           echo "DPA_API_BASE_URL=$API_URL" >> "$GITHUB_ENV"
           if [ -z "$API_URL" ]; then
-            echo "::warning::DPA_API_BASE_URL is empty; account/SMS features will be disabled in this internal build."
+            echo "::warning::DPA_API_BASE_URL is empty; account/SMS/delegation features will be disabled in this internal build."
           elif [[ "$API_URL" != https://* ]]; then
             echo "::error::Release DPA_API_BASE_URL must use HTTPS."
             exit 1
@@ -132,7 +135,7 @@ jobs:
       - name: Upload installable APK and build proof
         uses: actions/upload-artifact@v7
         with:
-          name: DPA-v0.5.9-Internal-Android-APK
+          name: DPA-v0.5.12-Internal-Android-APK
           path: |
             build/app/outputs/flutter-apk/app-release.apk
             build/DPA_BUILD_PROOF.txt
