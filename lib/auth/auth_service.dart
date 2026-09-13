@@ -96,7 +96,6 @@ class AuthService {
     }
   }
 
-
   Future<UserAccount> refreshSession() async {
     final inFlight = _refreshing;
     if (inFlight != null) return inFlight;
@@ -265,7 +264,6 @@ class AuthService {
     await _decode(response);
   }
 
-
   Future<UserAccount> syncCurrentUser() async {
     final response = await _authorized((headers) => _client.get(
       _uri('/v1/auth/me'),
@@ -322,5 +320,25 @@ class AuthService {
         .whereType<Map>()
         .map((e) => UserAccount.fromJson(Map<String, dynamic>.from(e)))
         .toList();
+  }
+
+  Future<UserAccount> updateUserRole({required String userId, required String role}) async {
+    if (currentUser?.role != 'owner') {
+      throw const AuthException('فقط Owner می‌تواند دسترسی Admin را تفویض یا لغو کند.', code: 'owner_required');
+    }
+    if (role != 'user' && role != 'admin') {
+      throw const AuthException('نقش انتخاب‌شده معتبر نیست.', code: 'invalid_role');
+    }
+    final response = await _authorized((headers) => _client.patch(
+      _uri('/v1/admin/users/$userId/role'),
+      headers: headers,
+      body: jsonEncode({'role': role}),
+    ));
+    final body = _payload(await _decode(response));
+    final raw = body['user'] ?? body;
+    if (raw is! Map) {
+      throw const AuthException('پاسخ تفویض دسترسی معتبر نیست.', code: 'invalid_user_response');
+    }
+    return UserAccount.fromJson(Map<String, dynamic>.from(raw));
   }
 }
