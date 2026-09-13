@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -46,3 +48,9 @@ class PasswordResetConfirm(BaseModel):
 
 class RefreshRequest(BaseModel):
     refresh_token: str = Field(min_length=20)
+
+
+class AdminRoleUpdateRequest(BaseModel):
+    # Owner may delegate administrative access, or revoke it back to user.
+    # The owner role itself is intentionally not assignable through the API.
+    role: Literal["user", "admin"]
