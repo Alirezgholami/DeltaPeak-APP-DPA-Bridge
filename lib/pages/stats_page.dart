@@ -80,7 +80,7 @@ class _StatsPageState extends State<StatsPage> {
             : RefreshIndicator(
                 onRefresh: _load,
                 child: ListView(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
                   children: [
                     _identityCard(), const SizedBox(height: 12),
                     _summaryCard(), const SizedBox(height: 12),
@@ -156,50 +156,65 @@ class _StatsPageState extends State<StatsPage> {
     final safeCompleted = completed.clamp(0, total).toInt();
     final missing = total - safeCompleted;
     final pct = _pct(safeCompleted);
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Row(children: [
-          Expanded(child: Text(label)),
-          Directionality(
-            textDirection: TextDirection.ltr,
-            child: Text('$safeCompleted / $total'),
-          ),
-        ]),
-        const SizedBox(height: 2),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Directionality(
-            textDirection: TextDirection.ltr,
-            child: Text(
-              '$total - $safeCompleted = $missing',
-              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w700),
-            ),
-          ),
-        ),
-        const SizedBox(height: 5),
-        Semantics(
-          label: '$label: $safeCompleted تکمیل، $missing باقی‌مانده',
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(999),
-            child: SizedBox(
-              height: 8,
-              child: Stack(
-                fit: StackFit.expand,
-                alignment: Alignment.centerRight,
-                children: [
-                  const ColoredBox(color: Colors.red),
-                  FractionallySizedBox(
-                    widthFactor: pct,
-                    alignment: Alignment.centerRight,
-                    child: const ColoredBox(color: Colors.green),
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Semantics(
+        label: '$label: $safeCompleted تکمیل، $missing باقی‌مانده از $total',
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                SizedBox(
+                  width: 160,
+                  child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(999),
+                    child: SizedBox(
+                      height: 9,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        alignment: Alignment.centerRight,
+                        children: [
+                          const ColoredBox(color: Colors.red),
+                          FractionallySizedBox(
+                            widthFactor: pct,
+                            alignment: Alignment.centerRight,
+                            child: const ColoredBox(color: Colors.green),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: Directionality(
+                textDirection: TextDirection.ltr,
+                child: Text.rich(
+                  TextSpan(
+                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                    children: [
+                      TextSpan(text: '$total', style: const TextStyle(color: Colors.blue)),
+                      const TextSpan(text: ' − '),
+                      TextSpan(text: '$safeCompleted', style: const TextStyle(color: Colors.green)),
+                      const TextSpan(text: ' = '),
+                      TextSpan(text: '$missing', style: const TextStyle(color: Colors.red)),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
+          ],
         ),
-      ]),
+      ),
     );
   }
 
