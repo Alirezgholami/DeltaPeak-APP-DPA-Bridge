@@ -144,11 +144,22 @@ class _RouteEditPageState extends State<RouteEditPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: Text(_isNew ? 'افزودن مسیر GPX' : 'ویرایش مسیر GPX')),
+        appBar: AppBar(
+          title: Text(_isNew ? 'افزودن مسیر GPX' : 'ویرایش مسیر GPX'),
+          actions: [
+            IconButton(
+              onPressed: _saving || _importingGpx ? null : _save,
+              icon: _saving
+                  ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.save),
+              tooltip: 'ذخیره',
+            ),
+          ],
+        ),
         body: Form(
           key: _formKey,
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
             children: [
               _field('نام مسیر', 'name', required: true),
               _field('طول مسیر (کیلومتر)', 'routeLengthKm', decimal: true),
@@ -190,12 +201,8 @@ class _RouteEditPageState extends State<RouteEditPage> {
                 const SizedBox(height: 6),
                 SelectableText('SHA-256: $_gpxSha256', style: Theme.of(context).textTheme.bodySmall),
               ],
-              const SizedBox(height: 16),
-              FilledButton.icon(
-                onPressed: _saving || _importingGpx ? null : _save,
-                icon: const Icon(Icons.save),
-                label: const Text('ذخیره مسیر'),
-              ),
+              const SizedBox(height: 18),
+              const Text('برای ذخیره، آیکون دیسکت بالای صفحه را بزنید.', textAlign: TextAlign.center),
             ],
           ),
         ),
