@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import '../auth/session_store.dart';
 import '../data/peak_repository.dart';
 import '../theme/app_theme_controller.dart';
 import 'account_page.dart';
 import 'data_safety_page.dart';
+import 'education_management_page.dart';
 import 'favorites_page.dart';
 import 'stats_page.dart';
 
@@ -26,7 +28,18 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
+    SessionStore.instance.addListener(_sessionChanged);
     _loadFilters();
+  }
+
+  void _sessionChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    SessionStore.instance.removeListener(_sessionChanged);
+    super.dispose();
   }
 
   Future<void> _loadFilters() async {
@@ -83,6 +96,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final controller = AppThemeController.instance;
+    final canManage = SessionStore.instance.canManageReferenceData;
     return Scaffold(
       appBar: AppBar(title: const Text('تنظیمات DPA')),
       body: ListView(
@@ -128,35 +142,15 @@ class _SettingsPageState extends State<SettingsPage> {
                           scrollDirection: Axis.horizontal,
                           child: Row(
                             children: [
-                              _chip(
-                                label: 'مختصات',
-                                selected: _coordinatesOnly,
-                                onSelected: _setCoordinates,
-                              ),
+                              _chip(label: 'مختصات', selected: _coordinatesOnly, onSelected: _setCoordinates),
                               const SizedBox(width: 8),
-                              _chip(
-                                label: 'GPX',
-                                selected: _gpxOnly,
-                                onSelected: _setGpx,
-                              ),
+                              _chip(label: 'GPX', selected: _gpxOnly, onSelected: _setGpx),
                               const SizedBox(width: 8),
-                              _chip(
-                                label: 'ناقص',
-                                selected: _quality == 'incomplete',
-                                onSelected: (_) => _toggleQuality('incomplete'),
-                              ),
+                              _chip(label: 'ناقص', selected: _quality == 'incomplete', onSelected: (_) => _toggleQuality('incomplete')),
                               const SizedBox(width: 8),
-                              _chip(
-                                label: 'نیازمند بررسی',
-                                selected: _quality == 'needs_review',
-                                onSelected: (_) => _toggleQuality('needs_review'),
-                              ),
+                              _chip(label: 'نیازمند بررسی', selected: _quality == 'needs_review', onSelected: (_) => _toggleQuality('needs_review')),
                               const SizedBox(width: 8),
-                              _chip(
-                                label: 'کامل',
-                                selected: _quality == 'complete',
-                                onSelected: (_) => _toggleQuality('complete'),
-                              ),
+                              _chip(label: 'کامل', selected: _quality == 'complete', onSelected: (_) => _toggleQuality('complete')),
                             ],
                           ),
                         ),
@@ -165,6 +159,13 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           const SizedBox(height: 12),
+          if (canManage)
+            _nav(
+              context,
+              Icons.school_outlined,
+              'مدیریت آموزش؛ Draft / Publish / Archive',
+              const EducationManagementPage(),
+            ),
           _nav(context, Icons.favorite_border, 'علاقه‌مندی‌ها', const FavoritesPage()),
           _nav(context, Icons.account_circle_outlined, 'حساب کاربری', const AccountPage()),
           _nav(context, Icons.security_outlined, 'Backup / Restore / Import / Migration', const DataSafetyPage()),
@@ -174,11 +175,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _chip({
-    required String label,
-    required bool selected,
-    required ValueChanged<bool> onSelected,
-  }) => FilterChip(
+  Widget _chip({required String label, required bool selected, required ValueChanged<bool> onSelected}) => FilterChip(
         label: Text(label),
         selected: selected,
         showCheckmark: true,
