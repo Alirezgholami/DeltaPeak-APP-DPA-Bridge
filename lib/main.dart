@@ -10,7 +10,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await PeakRepository.instance.initialize();
   await PeakIdentityDeduper.run(PeakRepository.instance.databasePath);
-  await PeakRepository.instance.ensureDatabaseReady();
   await SessionStore.instance.load();
   await AppThemeController.instance.load();
   SessionCoordinator.instance.start();
