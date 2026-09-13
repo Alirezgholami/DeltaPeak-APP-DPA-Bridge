@@ -26,6 +26,7 @@ class _HomePageState extends State<HomePage> {
   DatabaseInfo? _dbInfo;
   String? _province;
   String? _quality;
+  String? _missingField;
   bool _favoritesOnly = false;
   bool _coordinatesOnly = false;
   bool _gpxOnly = false;
@@ -76,31 +77,39 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  bool _matchesMissing(Peak peak) => switch (_missingField) {
+        null => true,
+        'county' => peak.county == null || peak.county!.trim().isEmpty,
+        'mountain_range' => peak.mountainRange == null || peak.mountainRange!.trim().isEmpty,
+        'summit_elevation' => peak.elevation == null || peak.elevation! <= 0,
+        'map_elevation' => peak.mapElevation == null || peak.mapElevation! <= 0,
+        'coordinates' => !peak.hasCoordinates,
+        'trailhead' => peak.trailhead == null || peak.trailhead!.trim().isEmpty,
+        'trailhead_elevation' => peak.trailheadElevationM == null || peak.trailheadElevationM! <= 0,
+        'elevation_gain' => peak.elevationGainM == null || peak.elevationGainM! <= 0,
+        'route_length' => peak.routeLengthKm == null || peak.routeLengthKm! <= 0,
+        'gpx' => true, // SQL-side inverse GPX filter is used below.
+        _ => true,
+      };
+
   Future<void> _search() async {
     if (mounted) setState(() => _loading = true);
     final repo = PeakRepository.instance;
-    final result = await Future.wait<dynamic>([
-      repo.search(
-        query: _controller.text,
-        province: _province,
-        qualityFilter: _quality,
-        favoritesOnly: _favoritesOnly,
-        hasCoordinates: _coordinatesOnly ? true : null,
-        hasGpx: _gpxOnly ? true : null,
-      ),
-      repo.countSearch(
-        query: _controller.text,
-        province: _province,
-        qualityFilter: _quality,
-        favoritesOnly: _favoritesOnly,
-        hasCoordinates: _coordinatesOnly ? true : null,
-        hasGpx: _gpxOnly ? true : null,
-      ),
-    ]);
+    final missingCoordinates = _missingField == 'coordinates';
+    final missingGpx = _missingField == 'gpx';
+    final result = await repo.search(
+      query: _controller.text,
+      province: _province,
+      qualityFilter: _quality,
+      favoritesOnly: _favoritesOnly,
+      hasCoordinates: missingCoordinates ? false : (_coordinatesOnly ? true : null),
+      hasGpx: missingGpx ? false : (_gpxOnly ? true : null),
+    );
+    final filtered = result.where(_matchesMissing).toList(growable: false);
     if (!mounted) return;
     setState(() {
-      _peaks = result[0] as List<Peak>;
-      _resultCount = result[1] as int;
+      _peaks = filtered;
+      _resultCount = filtered.length;
       _loading = false;
     });
   }
@@ -133,7 +142,17 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          title: const Text('Delta Peak'),
+          title: const Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Delta Peak'),
+              Text(
+                'دانشنامه قله های ایران',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
           actions: [
             if (_canManage)
               IconButton(onPressed: _addPeak, icon: const Icon(Icons.add_circle_outline), tooltip: 'افزودن قله'),
@@ -196,6 +215,33 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 2),
+            child: DropdownButtonFormField<String?>(
+              initialValue: _missingField,
+              decoration: const InputDecoration(
+                labelText: 'فیلتر موارد نقص برای تکمیل',
+                prefixIcon: Icon(Icons.rule_folder_outlined),
+              ),
+              items: const [
+                DropdownMenuItem<String?>(value: null, child: Text('بدون فیلتر نقص')),
+                DropdownMenuItem(value: 'county', child: Text('فاقد شهرستان')),
+                DropdownMenuItem(value: 'mountain_range', child: Text('فاقد رشته‌کوه')),
+                DropdownMenuItem(value: 'summit_elevation', child: Text('فاقد ارتفاع قله (تابلو)')),
+                DropdownMenuItem(value: 'map_elevation', child: Text('فاقد ارتفاع قله (Map)')),
+                DropdownMenuItem(value: 'coordinates', child: Text('فاقد مختصات قله')),
+                DropdownMenuItem(value: 'trailhead', child: Text('فاقد لوکیشن ابتدای پاکوب')),
+                DropdownMenuItem(value: 'trailhead_elevation', child: Text('فاقد ارتفاع شروع')),
+                DropdownMenuItem(value: 'elevation_gain', child: Text('فاقد ارتفاع‌گیری')),
+                DropdownMenuItem(value: 'route_length', child: Text('فاقد طول مسیر')),
+                DropdownMenuItem(value: 'gpx', child: Text('فاقد فایل GPX')),
+              ],
+              onChanged: (value) {
+                setState(() => _missingField = value);
+                _search();
+              },
+            ),
+          ),
+          Padding(
             padding: const EdgeInsets.fromLTRB(16, 2, 16, 6),
             child: Row(children: [
               Text('$_resultCount قله'),
@@ -226,7 +272,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ]),
       );
-
 
   Widget _header() {
     final info = _dbInfo;
